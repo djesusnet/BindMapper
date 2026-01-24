@@ -2,39 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.0] - 2026-01-24
+## [1.1.0] - 2026-01-24
 
 ### Changed
 
-- **Breaking Change**: Renamed `VelocityMap` class to `Velocity` for a cleaner and more concise API.
+- **Breaking Change**: Renamed `Mapper` class to `Velocity` for a cleaner and more concise API.
 
 #### Migration Guide
 
-Replace all usages of `VelocityMap` with `Velocity`:
+Replace all usages of `Mapper` with `Velocity`:
 
 ```csharp
-// Before (v1.1.0)
-VelocityMap.CreateMap<User, UserDto>();
-var dto = VelocityMap.Map<UserDto>(user);
-VelocityMap.Map(user, existingDto);
+// Before (v1.0.0)
+Mapper.CreateMap<User, UserDto>();
+var dto = Mapper.Map<UserDto>(user);
+Mapper.Map(user, existingDto);
 
-// After (v1.2.0)
+// After (v1.1.0)
 Velocity.CreateMap<User, UserDto>();
 var dto = Velocity.Map<UserDto>(user);
 Velocity.Map(user, existingDto);
 ```
 
----
-
-## [1.1.0] - 2026-01-24
-
-### Changed
-
-- **Breaking Change**: Renamed `Mapper` class to `VelocityMap` for better brand identity and to avoid conflicts with other mapping libraries.
-
 ### Added
 
 - .NET 10 support in CI/CD pipeline
+- Automatic version detection and release from CHANGELOG
 
 ### Fixed
 
