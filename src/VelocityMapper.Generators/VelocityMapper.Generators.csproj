@@ -12,6 +12,10 @@
     <!-- NOT a separate package - integrated into VelocityMapper -->
     <IsPackable>false</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    
+    <!-- Avoid file conflicts during parallel builds -->
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>

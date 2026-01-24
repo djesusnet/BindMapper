@@ -20,11 +20,14 @@
   </ItemGroup>
 
   <!-- Project reference for building - the generator is built separately -->
+  <!-- GlobalPropertiesToRemove prevents rebuilding for each target framework -->
   <ItemGroup>
     <ProjectReference Include="..\VelocityMapper.Generators\VelocityMapper.Generators.csproj" 
                       ReferenceOutputAssembly="false" 
                       SkipGetTargetFrameworkProperties="true"
-                      SetTargetFramework="TargetFramework=net8.0" />
+                      SetTargetFramework="TargetFramework=net8.0"
+                      GlobalPropertiesToRemove="TargetFramework"
+                      PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
