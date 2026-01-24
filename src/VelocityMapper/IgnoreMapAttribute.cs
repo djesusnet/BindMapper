@@ -7,4 +7,3 @@ namespace VelocityMapper;
 public sealed class IgnoreMapAttribute : Attribute
 {
 }
-

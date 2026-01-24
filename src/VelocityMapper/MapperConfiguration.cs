@@ -69,4 +69,3 @@ public sealed class MemberConfigurationExpression<TSource, TDestination, TMember
         // This is analyzed by the Source Generator
     }
 }
-

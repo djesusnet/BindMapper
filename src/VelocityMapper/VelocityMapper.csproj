@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <Description>VelocityMapper - A high-performance object mapper using Source Generators for zero-allocation mapping at compile time</Description>
+    <PackageId>VelocityMapper</PackageId>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\assets\icon.png" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!-- Include the Source Generator analyzer -->
+  <ItemGroup>
+    <None Include="..\VelocityMapper.Generators\bin\$(Configuration)\net8.0\VelocityMapper.Generators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
+  <!-- Project reference for building - the generator is built separately -->
+  <ItemGroup>
+    <ProjectReference Include="..\VelocityMapper.Generators\VelocityMapper.Generators.csproj" 
+                      ReferenceOutputAssembly="false" 
+                      SkipGetTargetFrameworkProperties="true"
+                      SetTargetFramework="TargetFramework=net8.0" />
+  </ItemGroup>
+
+</Project>

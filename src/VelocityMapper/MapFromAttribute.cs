@@ -16,4 +16,3 @@ public sealed class MapFromAttribute : Attribute
         SourcePropertyName = sourcePropertyName ?? throw new ArgumentNullException(nameof(sourcePropertyName));
     }
 }
-

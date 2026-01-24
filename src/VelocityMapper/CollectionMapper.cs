@@ -2,7 +2,7 @@ using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace VelocityMapper.Runtime;
+namespace VelocityMapper;
 
 /// <summary>
 /// High-performance collection mapping utilities.
@@ -253,4 +253,3 @@ public static class CollectionMapper
         ArrayPool<TDestination>.Shared.Return(array, clearArray);
     }
 }
-

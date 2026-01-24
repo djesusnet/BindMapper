@@ -8,4 +8,3 @@ namespace VelocityMapper;
 public sealed class MapperConfigurationAttribute : Attribute
 {
 }
-
