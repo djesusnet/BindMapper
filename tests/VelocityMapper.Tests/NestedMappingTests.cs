@@ -37,7 +37,7 @@ public class NestedMappingTests
         };
 
         // Act
-        var result = VelocityMap.Map<PersonDto>(person);
+        var result = Velocity.Map<PersonDto>(person);
 
         // Assert
         result.Should().NotBeNull();
@@ -68,7 +68,7 @@ public class NestedMappingTests
         };
 
         // Act
-        var result = VelocityMap.Map<OrderDto>(order);
+        var result = Velocity.Map<OrderDto>(order);
 
         // Assert
         result.Should().NotBeNull();
@@ -96,7 +96,7 @@ public class NestedMappingTests
         };
 
         // Act
-        var result = VelocityMap.Map<OrderDto>(order);
+        var result = Velocity.Map<OrderDto>(order);
 
         // Assert
         result.Should().NotBeNull();
@@ -131,7 +131,7 @@ public class NestedMappingTests
         };
 
         // Act
-        VelocityMap.Map(person, existing);
+        Velocity.Map(person, existing);
 
         // Assert
         existing.FirstName.Should().Be("Updated");
@@ -163,7 +163,7 @@ public class NestedMappingTests
         };
 
         // Act
-        VelocityMap.Map(person, existing);
+        Velocity.Map(person, existing);
 
         // Assert
         existing.Address.Should().NotBeNull();

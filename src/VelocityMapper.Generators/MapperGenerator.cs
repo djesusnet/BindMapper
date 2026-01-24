@@ -43,7 +43,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
                 return;
 
             var sourceText = GenerateMapperSource(compilation, mappings);
-            spc.AddSource("VelocityMap.g.cs", SourceText.From(sourceText, Encoding.UTF8));
+            spc.AddSource("Velocity.g.cs", SourceText.From(sourceText, Encoding.UTF8));
         });
     }
 
@@ -95,7 +95,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
             var memberAccess = invocation.Expression as MemberAccessExpressionSyntax;
             GenericNameSyntax? genericName = null;
 
-            // Handle both VelocityMap.CreateMap<T1, T2>() and CreateMap<T1, T2>() (in Profile)
+            // Handle both Velocity.CreateMap<T1, T2>() and CreateMap<T1, T2>() (in Profile)
             if (memberAccess?.Name is GenericNameSyntax gn && gn.Identifier.Text == "CreateMap")
             {
                 genericName = gn;
@@ -268,7 +268,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
         sb.AppendLine();
         sb.AppendLine("namespace VelocityMapper;");
         sb.AppendLine();
-        sb.AppendLine("public static partial class VelocityMap");
+        sb.AppendLine("public static partial class Velocity");
         sb.AppendLine("{");
         sb.AppendLine("    /// <summary>Creates a mapping configuration for the Source Generator to analyze.</summary>");
         sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
@@ -391,7 +391,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
     private static void AppendMapGenericNew(StringBuilder sb, MappingConfiguration config)
     {
         // Generate the AutoMapper-style Map<TDestination>(source) syntax
-        // This is the primary API: var dto = VelocityMap.Map<UserDto>(user);
+        // This is the primary API: var dto = Velocity.Map<UserDto>(user);
         sb.AppendLine();
         sb.AppendLine($"    /// <summary>");
         sb.AppendLine($"    /// Maps {config.SourceTypeName} to a new instance of {config.DestinationTypeName}.");
@@ -802,7 +802,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
             sb.AppendLine($"    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
             sb.AppendLine($"    partial void MapInternal({mapping.SourceType} source, {mapping.DestinationType} destination)");
             sb.AppendLine("    {");
-            sb.AppendLine($"        VelocityMap.Map(source, destination);");
+            sb.AppendLine($"        Velocity.Map(source, destination);");
             sb.AppendLine("    }");
         }
 
