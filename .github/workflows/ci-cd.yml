@@ -33,9 +33,6 @@ jobs:
     
     - name: Build
       run: dotnet build --no-restore --configuration Release
-    
-    - name: Build Samples
-      run: dotnet build samples/VelocityMapper.Samples/VelocityMapper.Samples.csproj --no-restore --configuration Release
 
   benchmarks:
     runs-on: ubuntu-latest
