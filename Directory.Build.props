@@ -5,15 +5,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <Authors>FlashMapper Contributors</Authors>
-    <Company>FlashMapper</Company>
-    <Copyright>Copyright © 2026 FlashMapper Contributors</Copyright>
+    <Authors>Daniel Jesus</Authors>
+    <Company>VelocityMapper</Company>
+    <Copyright>Copyright © 2026 Daniel Jesus</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/flashmapper/flashmapper</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/flashmapper/flashmapper</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/djesusnet/VelocityMapper</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/djesusnet/VelocityMapper</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>mapper;mapping;object-mapper;performance;source-generator;zero-allocation</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Version>1.0.0</Version>
   </PropertyGroup>
 </Project>
+

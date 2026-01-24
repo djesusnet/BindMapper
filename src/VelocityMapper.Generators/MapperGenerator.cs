@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace FlashMapper.Generators;
+namespace VelocityMapper.Generators;
 
 /// <summary>
 /// Source Generator that builds the mapper API and per-type map methods at compile time.
@@ -14,9 +14,9 @@ namespace FlashMapper.Generators;
 [Generator]
 public sealed class MapperGenerator : IIncrementalGenerator
 {
-    private const string MapperConfigurationAttributeName = "FlashMapper.MapperConfigurationAttribute";
-    private const string IgnoreMapAttributeName = "FlashMapper.IgnoreMapAttribute";
-    private const string MapFromAttributeName = "FlashMapper.MapFromAttribute";
+    private const string MapperConfigurationAttributeName = "VelocityMapper.MapperConfigurationAttribute";
+    private const string IgnoreMapAttributeName = "VelocityMapper.IgnoreMapAttribute";
+    private const string MapFromAttributeName = "VelocityMapper.MapFromAttribute";
 
     private static readonly SymbolDisplayFormat TypeFormat = new(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
@@ -125,9 +125,9 @@ public sealed class MapperGenerator : IIncrementalGenerator
         sb.AppendLine("using System;");
         sb.AppendLine("using System.Runtime.CompilerServices;");
         sb.AppendLine();
-        sb.AppendLine("namespace FlashMapper;");
+        sb.AppendLine("namespace VelocityMapper;");
         sb.AppendLine();
-        sb.AppendLine("internal static partial class Mapper");
+        sb.AppendLine("public static partial class Mapper");
         sb.AppendLine("{");
         sb.AppendLine("    public static MapperConfiguration<TSource, TDestination> CreateMap<TSource, TDestination>()");
         sb.AppendLine("    {");
@@ -361,3 +361,4 @@ public sealed class MapperGenerator : IIncrementalGenerator
         bool IsIgnored,
         string? MapFrom);
 }
+

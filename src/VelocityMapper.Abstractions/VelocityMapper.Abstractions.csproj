@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net8.0;net9.0;net10.0</TargetFrameworks>
-    <Description>Core abstractions and attributes for FlashMapper - a high-performance object mapper using Source Generators</Description>
-    <PackageId>FlashMapper.Abstractions</PackageId>
+    <Description>Core abstractions and attributes for VelocityMapper - a high-performance object mapper using Source Generators</Description>
+    <PackageId>VelocityMapper.Abstractions</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,3 +11,4 @@
   </ItemGroup>
 
 </Project>
+

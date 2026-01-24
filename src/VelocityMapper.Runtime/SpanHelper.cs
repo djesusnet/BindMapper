@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace FlashMapper.Runtime;
+namespace VelocityMapper.Runtime;
 
 /// <summary>
 /// Internal helper utilities for high-performance operations.
@@ -61,3 +61,4 @@ internal static class SpanHelper
         source.CopyTo(destination);
     }
 }
+

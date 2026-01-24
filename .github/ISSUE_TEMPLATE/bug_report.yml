@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug in FlashMapper
+description: Report a bug in VelocityMapper
 title: "[Bug]: "
 labels: ["bug", "triage"]
 body:
@@ -77,10 +77,10 @@ body:
       required: true
   
   - type: input
-    id: flashmapper-version
+    id: VelocityMapper-version
     attributes:
-      label: FlashMapper Version
-      description: Which version of FlashMapper?
+      label: VelocityMapper Version
+      description: Which version of VelocityMapper?
       placeholder: e.g. 1.0.0
     validations:
       required: true
@@ -105,3 +105,4 @@ body:
       placeholder: Stack traces, generated code, etc.
     validations:
       required: false
+

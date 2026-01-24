@@ -1,4 +1,4 @@
-namespace FlashMapper;
+namespace VelocityMapper;
 
 /// <summary>
 /// Marks a property or field to be ignored during mapping.
@@ -7,3 +7,4 @@ namespace FlashMapper;
 public sealed class IgnoreMapAttribute : Attribute
 {
 }
+

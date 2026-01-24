@@ -35,7 +35,7 @@ jobs:
       run: dotnet build --no-restore --configuration Release
     
     - name: Build Samples
-      run: dotnet build samples/FlashMapper.Samples/FlashMapper.Samples.csproj --no-restore --configuration Release
+      run: dotnet build samples/VelocityMapper.Samples/VelocityMapper.Samples.csproj --no-restore --configuration Release
 
   benchmarks:
     runs-on: ubuntu-latest
@@ -51,14 +51,14 @@ jobs:
     
     - name: Run Benchmarks
       run: |
-        cd tests/FlashMapper.Benchmarks
+        cd tests/VelocityMapper.Benchmarks
         dotnet run -c Release -- --filter * --exporters json
     
     - name: Upload Benchmark Results
       uses: actions/upload-artifact@v4
       with:
         name: benchmark-results
-        path: tests/FlashMapper.Benchmarks/BenchmarkDotNet.Artifacts/**/*
+        path: tests/VelocityMapper.Benchmarks/BenchmarkDotNet.Artifacts/**/*
 
   pack:
     runs-on: ubuntu-latest
@@ -85,3 +85,4 @@ jobs:
     - name: Push to NuGet
       run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
       if: github.event_name == 'release'
+

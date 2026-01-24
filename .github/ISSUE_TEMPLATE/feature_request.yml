@@ -1,5 +1,5 @@
 name: Feature Request
-description: Suggest a new feature for FlashMapper
+description: Suggest a new feature for VelocityMapper
 title: "[Feature]: "
 labels: ["enhancement"]
 body:
@@ -66,3 +66,4 @@ body:
       description: Add any other context about the feature
     validations:
       required: false
+

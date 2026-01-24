@@ -1,19 +1,19 @@
 <p align="center">
-  <img src="assets/logo.png" alt="FlashMapper Logo" width="300">
+  <img src="assets/logo.png" alt="VelocityMapper Logo" width="300">
 </p>
 
-# ⚡ FlashMapper
+# ⚡ VelocityMapper
 
 **High-performance object mapper for .NET with zero reflection and zero runtime overhead.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![NuGet](https://img.shields.io/nuget/v/FlashMapper.svg)](https://www.nuget.org/packages/FlashMapper/)
+[![NuGet](https://img.shields.io/nuget/v/VelocityMapper.svg)](https://www.nuget.org/packages/VelocityMapper/)
 
-FlashMapper uses **Source Generators** to generate mapping code at compile-time, delivering performance comparable to hand-written mapping code while maintaining a clean, AutoMapper-like syntax.
+VelocityMapper uses **Source Generators** to generate mapping code at compile-time, delivering performance comparable to hand-written mapping code while maintaining a clean, AutoMapper-like syntax.
 
 ## ✨ Simple & Easy to Use
 
-FlashMapper was designed with **simplicity in mind**. If you know AutoMapper, you already know FlashMapper! The API is intuitive and straightforward - just define your mappings and start using them immediately. No complex configuration, no learning curve.
+VelocityMapper was designed with **simplicity in mind**. If you know AutoMapper, you already know VelocityMapper! The API is intuitive and straightforward - just define your mappings and start using them immediately. No complex configuration, no learning curve.
 
 ```csharp
 // Configure once
@@ -38,13 +38,13 @@ var dto = Mapper.Map<UserDto>(user);
 ## 📦 Installation
 
 ```bash
-dotnet add package FlashMapper
+dotnet add package VelocityMapper
 ```
 
 Or via NuGet Package Manager:
 
 ```powershell
-Install-Package FlashMapper
+Install-Package VelocityMapper
 ```
 
 ## 🎯 Supported Frameworks
@@ -77,7 +77,7 @@ public class UserDto
 ### 2. Configure Mappings
 
 ```csharp
-using FlashMapper;
+using VelocityMapper;
 
 public static class MappingConfiguration
 {
@@ -181,14 +181,14 @@ public class UserDto
 
 ## 🏎️ Performance Comparison
 
-FlashMapper is designed to match hand-written mapping performance:
+VelocityMapper is designed to match hand-written mapping performance:
 
 ### Map to New Instance
 
 | Method | Mean | Ratio | Allocated |
 |--------|------|-------|-----------|
 | ManualMapping | 12.79 ns | 1.00x | 120 B |
-| **FlashMapper** | **14.41 ns** | **1.13x** | **120 B** |
+| **VelocityMapper** | **14.41 ns** | **1.13x** | **120 B** |
 | Mapperly | 13.55 ns | 1.06x | 120 B |
 | Mapster | 20.70 ns | 1.62x | 120 B |
 | AutoMapper | 46.18 ns | 3.61x | 120 B |
@@ -197,14 +197,14 @@ FlashMapper is designed to match hand-written mapping performance:
 
 | Method | Mean | Ratio | Allocated |
 |--------|------|-------|-----------|
-| **FlashMapper** | **8.81 ns** | **0.69x** | **0 B** |
+| **VelocityMapper** | **8.81 ns** | **0.69x** | **0 B** |
 | ManualMapping | 9.60 ns | 0.75x | 0 B |
 | AutoMapper | 37.64 ns | 2.94x | 0 B |
 
 *Benchmarks on .NET 9.0.11, Intel Core i5-14600KF, Windows 11*
 
 **Key Takeaways:**
-- ⚡ **FlashMapper_MapToExisting** is the **fastest** - even faster than manual mapping!
+- ⚡ **VelocityMapper_MapToExisting** is the **fastest** - even faster than manual mapping!
 - 🎯 Only **~12% slower** than hand-written code for new instances
 - 💨 **3.2x faster** than AutoMapper, **1.4x faster** than Mapster
 - 🧹 **Zero allocations** when mapping to existing instances
@@ -212,7 +212,7 @@ FlashMapper is designed to match hand-written mapping performance:
 To run benchmarks:
 
 ```bash
-cd tests/FlashMapper.Benchmarks
+cd tests/VelocityMapper.Benchmarks
 dotnet run -c Release
 ```
 
@@ -268,7 +268,7 @@ AutoMapper is excellent for flexibility, but:
 - Dynamic behavior can be unpredictable
 - Higher memory allocations
 
-FlashMapper trades some flexibility for **maximum performance** and **compile-time safety**.
+VelocityMapper trades some flexibility for **maximum performance** and **compile-time safety**.
 
 ## 📖 API Reference
 
@@ -315,10 +315,11 @@ Inspired by AutoMapper's elegant API and Mapperly's Source Generator approach.
 
 ## 📞 Support
 
-- 🐛 [Report a bug](https://github.com/flashmapper/flashmapper/issues)
-- 💡 [Request a feature](https://github.com/flashmapper/flashmapper/issues)
-- 💬 [Ask a question](https://github.com/flashmapper/flashmapper/discussions)
+- 🐛 [Report a bug](https://github.com/djesusnet/VelocityMapper/issues)
+- 💡 [Request a feature](https://github.com/djesusnet/VelocityMapper/issues)
+- 💬 [Ask a question](https://github.com/djesusnet/VelocityMapper/discussions)
 
 ---
 
-Made with ⚡ by the FlashMapper contributors
+Made with ⚡ by Daniel Jesus
+

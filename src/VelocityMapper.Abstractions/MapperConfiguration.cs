@@ -1,4 +1,4 @@
-namespace FlashMapper;
+namespace VelocityMapper;
 
 /// <summary>
 /// Configuration builder for creating type mappings.
@@ -69,3 +69,4 @@ public sealed class MemberConfigurationExpression<TSource, TDestination, TMember
         // This is analyzed by the Source Generator
     }
 }
+

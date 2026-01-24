@@ -4,7 +4,7 @@ using Mapster;
 using Riok.Mapperly.Abstractions;
 using MapperlyMapper = Riok.Mapperly.Abstractions.MapperAttribute;
 
-namespace FlashMapper.Benchmarks;
+namespace VelocityMapper.Benchmarks;
 
 public class Program
 {
@@ -16,7 +16,7 @@ public class Program
 }
 
 /// <summary>
-/// Benchmarks comparing FlashMapper with AutoMapper and manual mapping.
+/// Benchmarks comparing VelocityMapper with AutoMapper and manual mapping.
 /// </summary>
 [MemoryDiagnoser]
 [HideColumns("Error", "StdDev", "Median", "RatioSD")]
@@ -33,7 +33,7 @@ public class MapperBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        // Setup FlashMapper
+        // Setup VelocityMapper
         MapperConfig.Configure();
 
         // Setup AutoMapper
@@ -100,7 +100,7 @@ public class MapperBenchmarks
     }
 
     [Benchmark]
-    public PersonDto FlashMapper_Map()
+    public PersonDto VelocityMapper_Map()
     {
         return Mapper.Map<PersonDto>(_person);
     }
@@ -124,7 +124,7 @@ public class MapperBenchmarks
     }
 
     [Benchmark]
-    public PersonDto FlashMapper_MapToExisting()
+    public PersonDto VelocityMapper_MapToExisting()
     {
         Mapper.Map<PersonDto>(_person, _personDtoReuseFlash);
         return _personDtoReuseFlash;
@@ -206,7 +206,7 @@ public class AddressDto
     public string Country { get; set; } = "";
 }
 
-// FlashMapper configuration
+// VelocityMapper configuration
 public static class MapperConfig
 {
     [MapperConfiguration]
@@ -223,3 +223,4 @@ public partial class PersonMapper
     public partial PersonDto Map(Person source);
     public partial AddressDto Map(Address source);
 }
+
