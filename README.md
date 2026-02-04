@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/djesusnet/VelocityMapper/main/assets/icon.png" alt="VelocityMapper Logo" width="120">
+  <img src="https://raw.githubusercontent.com/djesusnet/VelocityMapper/refs/heads/main/assets/icon.png" alt="VelocityMapper Logo" width="120">
 </p>
 
 # VelocityMapper
@@ -57,8 +57,8 @@ public static class MappingConfig
     [MapperConfiguration]
     public static void Configure()
     {
-        Velocity.CreateMap<User, UserDto>();
-        Velocity.CreateMap<Address, AddressDto>();
+        Mapper.CreateMap<User, UserDto>();
+        Mapper.CreateMap<Address, AddressDto>();
     }
 }
 ```
@@ -68,15 +68,12 @@ public static class MappingConfig
 ```csharp
 var user = new User { Id = 1, Name = "João", Email = "joao@email.com" };
 
-// Criar nova instância
-var dto = Velocity.Map<UserDto>(user);
-
-// Ou com tipo inferido
-UserDto dto2 = Velocity.Map(user);
+// ⚡ Criar nova instância
+var dto = Mapper.To<UserDto>(user);
 
 // Zero allocation - mapear para objeto existente
 var existingDto = new UserDto();
-Velocity.Map(user, existingDto);
+Mapper.To(user, existingDto);
 ```
 
 ---
@@ -86,38 +83,35 @@ Velocity.Map(user, existingDto);
 ### Mapeamento Básico
 
 ```csharp
-// Nova instância (estilo AutoMapper)
-var dto = Velocity.Map<UserDto>(user);
-
-// Nova instância (tipo inferido - mais rápido)
-UserDto dto = Velocity.Map(user);
+// Nova instância
+var dto = Mapper.To<UserDto>(user);
 
 // Para objeto existente (zero allocation)
-Velocity.Map(user, existingDto);
+Mapper.To(user, existingDto);
 ```
 
 ### Mapeamento de Coleções
 
 ```csharp
-// Lista
-List<UserDto> dtos = Velocity.MapList(users);
+// ⚡ NOVA API - Mais limpa e com Span!
+var users = GetUsers(); // List<User>, User[], IEnumerable<User>
 
-// Array
-UserDto[] array = Velocity.MapArray(usersArray);
+// ToList - Auto-otimizado com CollectionsMarshal.AsSpan (.NET 8+)
+List<UserDto> dtos = Mapper.ToList<UserDto>(users);
 
-// ICollection<T>
-ICollection<User> users = GetUsers();
-List<UserDto> dtos = CollectionMapper.MapToList(users, Velocity.Map<UserDto>);
-UserDto[] array = CollectionMapper.MapToArray(users, Velocity.Map<UserDto>);
+// ToArray - Otimizado com Span zero-copy
+UserDto[] array = Mapper.ToArray<UserDto>(users);
 
-// IEnumerable<T> (detecta automaticamente List, Array ou ICollection)
-List<UserDto> dtos = CollectionMapper.MapEnumerable(users, Velocity.Map<UserDto>);
+// ToEnumerable - Lazy evaluation (deferred execution)
+IEnumerable<UserDto> enumerable = Mapper.ToEnumerable<UserDto>(users);
+var filtered = enumerable.Where(x => x.Id > 10).ToList();
 
-// Span (máxima performance)
-UserDto[] result = Velocity.MapSpan(usersSpan);
+// ToSpan - TRUE zero allocation (advanced)
+Span<UserDto> destination = stackalloc UserDto[100];
+Mapper.ToSpan(users.AsSpan(), destination);
 
-// Zero allocation com Span
-Velocity.MapSpanTo(sourceSpan, destinationSpan);
+// API Legada (ainda suportada, mas ToList/ToArray são mais rápidos)
+List<UserDto> dtos2 = CollectionMapper.MapToList(users, Mapper.To<UserDto>);
 ```
 
 ---
@@ -145,7 +139,7 @@ public class UserDto
     // PasswordHash não existe → ignorado automaticamente!
 }
 
-var dto = Velocity.Map<UserDto>(user);
+var dto = Mapper.To<UserDto>(user);
 // dto terá: Id, Name, Email
 // PasswordHash é ignorado silenciosamente ✓
 ```
@@ -195,10 +189,11 @@ O Source Generator analisa seu código em tempo de compilação e gera métodos 
 
 ```csharp
 // Você escreve:
-Velocity.CreateMap<User, UserDto>();
+Mapper.CreateMap<User, UserDto>();
+var dto = Mapper.To<UserDto>(user);
 
-// O gerador cria:
-public static UserDto Map(User source)
+// O gerador cria automaticamente:
+public static UserDto To(User source)
 {
     return new UserDto
     {
@@ -206,7 +201,7 @@ public static UserDto Map(User source)
         Age = source.Age,
         Name = source.Name,       // Reference types depois
         Email = source.Email,
-        Address = source.Address is { } addr ? Map(addr) : null
+        Address = source.Address is { } addr ? To(addr) : null  // Nested mapping
     };
 }
 ```
@@ -215,17 +210,17 @@ public static UserDto Map(User source)
 
 ## 📋 Referência Rápida
 
-| Método | Uso | Allocation |
-|--------|-----|------------|
-| `Velocity.Map<TDest>(source)` | Nova instância | DTO size |
-| `Velocity.Map(source)` | Nova instância (inferido) | DTO size |
-| `Velocity.Map(source, dest)` | Objeto existente | 0 B |
-| `Velocity.MapList(list)` | Lista → Lista | List + DTOs |
-| `Velocity.MapArray(array)` | Array → Array | Array + DTOs |
-| `CollectionMapper.MapToList(collection, mapper)` | ICollection → Lista | List + DTOs |
-| `CollectionMapper.MapToArray(collection, mapper)` | ICollection → Array | Array + DTOs |
-| `CollectionMapper.MapEnumerable(enumerable, mapper)` | IEnumerable → Lista | List + DTOs |
-| `Velocity.MapSpanTo(src, dest)` | Span → Span | 0 B |
+| Método | Uso | Allocation | Performance |
+|--------|-----|------------|-------------|
+| `Mapper.To<TDest>(source)` | Nova instância | DTO size | ⚡⚡⚡ 12ns |
+| `Mapper.To(source, dest)` | Objeto existente | 0 B | ⚡⚡⚡ Zero alloc |
+| `Mapper.ToList<TDest>(enumerable)` | IEnumerable → Lista | List + DTOs | ⚡⚡⚡ Span-optimized |
+| `Mapper.ToArray<TDest>(enumerable)` | IEnumerable → Array | Array + DTOs | ⚡⚡⚡ Span zero-copy |
+| `Mapper.ToEnumerable<TDest>(enumerable)` | IEnumerable → IEnumerable | Lazy | ⚡⚡⚡ Deferred execution |
+| `Mapper.ToSpan(src, dest)` | Span → Span | 0 B | ⚡⚡⚡ TRUE zero alloc |
+| `CollectionMapper.*` (legado) | Compatibilidade | List + DTOs | ⚡⚡ Mais lento |
+
+**Nova API**: `ToList`, `ToArray` e `ToEnumerable` detectam automaticamente List/Array e usam fast-path com Span!
 
 ---
 

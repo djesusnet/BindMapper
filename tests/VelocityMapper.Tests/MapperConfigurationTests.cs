@@ -18,7 +18,7 @@ public class MapperConfigurationTests
     public void CreateMap_ShouldReturnMapperConfiguration()
     {
         // Act
-        var config = Velocity.CreateMap<SimpleSource, SimpleDestination>();
+        var config = Mapper.CreateMap<SimpleSource, SimpleDestination>();
 
         // Assert
         config.Should().NotBeNull();
@@ -29,7 +29,7 @@ public class MapperConfigurationTests
     public void CreateMap_WithAction_ShouldReturnMapperConfiguration()
     {
         // Act
-        var config = Velocity.CreateMap<SimpleSource, SimpleDestination>(cfg =>
+        var config = Mapper.CreateMap<SimpleSource, SimpleDestination>(cfg =>
         {
             // Configuration action
         });

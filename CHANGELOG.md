@@ -12,11 +12,12 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Renamed `Mapper` class to `Velocity` for a cleaner and more concise API.
+- Renamed API from `Velocity.Map` to `Mapper.To` for better clarity
+- New collection API: `ToList`, `ToArray`, `ToEnumerable`, `ToSpan` (Span-optimized)
 
 #### Migration Guide
 
-Replace all usages of `Mapper` with `Velocity`:
+**Single Object Mapping:**
 
 ```csharp
 // Before (v1.0.0)
@@ -24,10 +25,23 @@ Mapper.CreateMap<User, UserDto>();
 var dto = Mapper.Map<UserDto>(user);
 Mapper.Map(user, existingDto);
 
-// After (v1.1.0)
-Velocity.CreateMap<User, UserDto>();
-var dto = Velocity.Map<UserDto>(user);
-Velocity.Map(user, existingDto);
+// After (v1.1.0+)
+Mapper.CreateMap<User, UserDto>();
+var dto = Mapper.To<UserDto>(user);
+Mapper.To(user, existingDto);
+```
+
+**Collection Mapping:**
+
+```csharp
+// Before (v1.0.0)
+CollectionMapper.MapToList(users, Mapper.To<UserDto>);
+CollectionMapper.MapToArray(users, Mapper.To<UserDto>);
+
+// After (v1.1.0+) - Cleaner and faster with Span!
+Mapper.ToList<UserDto>(users);
+Mapper.ToArray<UserDto>(users);
+Mapper.ToEnumerable<UserDto>(users);  // Lazy evaluation
 ```
 
 ### Added
@@ -56,6 +70,4 @@ Velocity.Map(user, existingDto);
 - Support for .NET 6, 8, 9, and 10
 - Fluent API configuration (`ForMember`, `Ignore`, `ReverseMap`)
 - Attribute-based mapping (`[MapFrom]`, `[IgnoreMap]`)
-- Collection mapping (`MapList`, `MapArray`, `MapSpan`, `MapSpanTo`)
-- Nested object mapping
-- Map to existing object (zero allocation)
+- Collection mapping: `ToList`, `ToArray`, `ToEnumerable`, `ToSpan` (Span-optimized)

@@ -102,7 +102,7 @@ public class MapperBenchmarks
     [Benchmark]
     public PersonDto VelocityMapper_Map()
     {
-        return Velocity.Map(_person);
+        return Mapper.To(_person);
     }
 
     [Benchmark]
@@ -126,7 +126,7 @@ public class MapperBenchmarks
     [Benchmark]
     public PersonDto VelocityMapper_MapToExisting()
     {
-        Velocity.Map(_person, _personDtoReuseFlash);
+        Mapper.To(_person, _personDtoReuseFlash);
         return _personDtoReuseFlash;
     }
 
@@ -212,8 +212,8 @@ public static class MapperConfig
     [MapperConfiguration]
     public static void Configure()
     {
-        Velocity.CreateMap<Person, PersonDto>();
-        Velocity.CreateMap<Address, AddressDto>();
+        Mapper.CreateMap<Person, PersonDto>();
+        Mapper.CreateMap<Address, AddressDto>();
     }
 }
 

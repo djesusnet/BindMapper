@@ -26,7 +26,7 @@ public class CollectionMappingTests
         };
 
         // Act
-        var result = CollectionMapper.MapList(sources, Velocity.Map<SimpleDestination>);
+        var result = Mapper.ToList<SimpleDestination>(sources);
 
         // Assert
         result.Should().HaveCount(3);
@@ -43,7 +43,7 @@ public class CollectionMappingTests
         var sources = new List<SimpleSource>();
 
         // Act
-        var result = CollectionMapper.MapList(sources, Velocity.Map<SimpleDestination>);
+        var result = Mapper.ToList<SimpleDestination>(sources);
 
         // Assert
         result.Should().NotBeNull();
@@ -57,7 +57,7 @@ public class CollectionMappingTests
         List<SimpleSource>? sources = null;
 
         // Act
-        var result = CollectionMapper.MapList(sources, Velocity.Map<SimpleDestination>);
+        var result = Mapper.ToList<SimpleDestination>(sources);
 
         // Assert
         result.Should().NotBeNull();
@@ -75,7 +75,7 @@ public class CollectionMappingTests
         };
 
         // Act
-        var result = CollectionMapper.MapArray(sources, Velocity.Map<SimpleDestination>);
+        var result = Mapper.ToArray<SimpleDestination>(sources);
 
         // Assert
         result.Should().HaveCount(2);
@@ -90,7 +90,7 @@ public class CollectionMappingTests
         var sources = Array.Empty<SimpleSource>();
 
         // Act
-        var result = CollectionMapper.MapArray(sources, Velocity.Map<SimpleDestination>);
+        var result = Mapper.ToArray<SimpleDestination>(sources);
 
         // Assert
         result.Should().NotBeNull();
@@ -104,7 +104,7 @@ public class CollectionMappingTests
         SimpleSource[]? sources = null;
 
         // Act
-        var result = CollectionMapper.MapArray(sources, Velocity.Map<SimpleDestination>);
+        var result = Mapper.ToArray<SimpleDestination>(sources);
 
         // Assert
         result.Should().NotBeNull();
@@ -122,7 +122,7 @@ public class CollectionMappingTests
         };
 
         // Act
-        var result = CollectionMapper.MapEnumerable(sources, Velocity.Map<SimpleDestination>);
+        var result = Mapper.ToList<SimpleDestination>(sources);
 
         // Assert
         result.Should().HaveCount(2);
@@ -139,7 +139,7 @@ public class CollectionMappingTests
         };
 
         // Act
-        var result = CollectionMapper.MapEnumerable(sources, Velocity.Map<SimpleDestination>);
+        var result = Mapper.ToList<SimpleDestination>(sources);
 
         // Assert
         result.Should().HaveCount(2);
@@ -154,7 +154,7 @@ public class CollectionMappingTests
         IEnumerable<SimpleSource>? sources = null;
 
         // Act
-        var result = CollectionMapper.MapEnumerable(sources, Velocity.Map<SimpleDestination>);
+        var result = Mapper.ToList<SimpleDestination>(sources);
 
         // Assert
         result.Should().NotBeNull();
@@ -173,7 +173,7 @@ public class CollectionMappingTests
         };
 
         // Act
-        var result = CollectionMapper.MapToList(sources, Velocity.Map<SimpleDestination>);
+        var result = Mapper.ToList<SimpleDestination>(sources);
 
         // Assert
         result.Should().HaveCount(3);
@@ -191,7 +191,7 @@ public class CollectionMappingTests
         };
 
         // Act
-        var result = CollectionMapper.MapToArray(sources, Velocity.Map<SimpleDestination>);
+        var result = Mapper.ToArray<SimpleDestination>(sources);
 
         // Assert
         result.Should().BeOfType<SimpleDestination[]>();
@@ -219,7 +219,7 @@ public class CollectionMappingTests
         };
 
         // Act
-        var result = CollectionMapper.MapList(persons, Velocity.Map<PersonDto>);
+        var result = Mapper.ToList<PersonDto>(persons);
 
         // Assert
         result.Should().HaveCount(2);

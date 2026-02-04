@@ -43,7 +43,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
                 return;
 
             var sourceText = GenerateMapperSource(compilation, mappings);
-            spc.AddSource("Velocity.g.cs", SourceText.From(sourceText, Encoding.UTF8));
+            spc.AddSource("Mapper.g.cs", SourceText.From(sourceText, Encoding.UTF8));
         });
     }
 
@@ -95,7 +95,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
             var memberAccess = invocation.Expression as MemberAccessExpressionSyntax;
             GenericNameSyntax? genericName = null;
 
-            // Handle both Velocity.CreateMap<T1, T2>() and CreateMap<T1, T2>() (in Profile)
+            // Handle both Mapper.CreateMap<T1, T2>() and CreateMap<T1, T2>() (in Profile)
             if (memberAccess?.Name is GenericNameSyntax gn && gn.Identifier.Text == "CreateMap")
             {
                 genericName = gn;
@@ -268,7 +268,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
         sb.AppendLine();
         sb.AppendLine("namespace VelocityMapper;");
         sb.AppendLine();
-        sb.AppendLine("public static partial class Velocity");
+        sb.AppendLine("public static partial class Mapper");
         sb.AppendLine("{");
         sb.AppendLine("    /// <summary>Creates a mapping configuration for the Source Generator to analyze.</summary>");
         sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
@@ -288,11 +288,11 @@ public sealed class MapperGenerator : IIncrementalGenerator
 
         foreach (var mapping in mappings)
         {
-            // Generate Map(source) -> new destination (12.03 ns - fastest for new instance)
+            // Generate To(source) -> new destination (12.03 ns - fastest for new instance)
             AppendMapNewInstance(sb, mapping, mappings);
-            // Generate Map<TDestination>(source) with constraint (AutoMapper-style API)
+            // Generate To<TDestination>(source) with constraint (AutoMapper-style API)
             AppendMapGenericNew(sb, mapping);
-            // Generate Map(source, destination) - zero allocation
+            // Generate To(source, destination) - zero allocation
             AppendMapToExisting(sb, mapping, mappings);
         }
 
@@ -320,13 +320,11 @@ public sealed class MapperGenerator : IIncrementalGenerator
         sb.AppendLine();
         sb.AppendLine("    /// <summary>");
         sb.AppendLine($"    /// Maps {config.SourceTypeName} to a new {config.DestinationTypeName}.");
-        sb.AppendLine("    /// JIT-optimized: no generic virtualization, cache-ordered writes, fully inlined.");
+        sb.AppendLine("    /// JIT-optimized object initializer pattern with aggressive inlining.");
         sb.AppendLine("    /// </summary>");
-        sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]");
-        sb.AppendLine($"    public static {config.DestinationType} Map({config.SourceType} source)");
+        sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+        sb.AppendLine($"    public static {config.DestinationType} To({config.SourceType} source)");
         sb.AppendLine("    {");
-
-        // Use object initializer for better performance
         sb.AppendLine($"        return new {config.DestinationType}");
         sb.AppendLine("        {");
 
@@ -372,13 +370,13 @@ public sealed class MapperGenerator : IIncrementalGenerator
                 var sourceIsRef = sourceProp.Type.IsReferenceType;
                 if (sourceIsRef)
                 {
-                    // Generate inline mapping instead of calling Map() - avoid method call overhead
+                    // Inline nested mapping - eliminates method call
                     var inlineMapping = GenerateInlineMapping(nestedMapping!, $"source.{sourceProp.Name}", mappings);
                     propertyAssignments.Add($"            {destProp.Name} = source.{sourceProp.Name} is {{ }} __src{destProp.Name} ? {inlineMapping.Replace($"source.{sourceProp.Name}", $"__src{destProp.Name}")} : null");
                 }
                 else
                 {
-                    propertyAssignments.Add($"            {destProp.Name} = Map(source.{sourceProp.Name})");
+                    propertyAssignments.Add($"            {destProp.Name} = To(source.{sourceProp.Name})");
                 }
             }
         }
@@ -390,19 +388,19 @@ public sealed class MapperGenerator : IIncrementalGenerator
 
     private static void AppendMapGenericNew(StringBuilder sb, MappingConfiguration config)
     {
-        // Generate the AutoMapper-style Map<TDestination>(source) syntax
-        // This is the primary API: var dto = Velocity.Map<UserDto>(user);
+        // Generate the AutoMapper-style To<TDestination>(source) syntax
+        // This is the primary API: var dto = Mapper.To<UserDto>(user);
         sb.AppendLine();
         sb.AppendLine($"    /// <summary>");
         sb.AppendLine($"    /// Maps {config.SourceTypeName} to a new instance of {config.DestinationTypeName}.");
         sb.AppendLine($"    /// Generated at compile-time for maximum performance - no reflection, no boxing.");
         sb.AppendLine($"    /// </summary>");
         sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]");
-        sb.AppendLine($"    public static TDestination Map<TDestination>({config.SourceType} source) where TDestination : {config.DestinationType}");
+        sb.AppendLine($"    public static TDestination To<TDestination>({config.SourceType} source) where TDestination : {config.DestinationType}");
         sb.AppendLine("    {");
         // For reference types, the constraint ensures TDestination : DestinationType
         // Since both are classes, we can safely use Unsafe.As to avoid boxing
-        sb.AppendLine($"        var __result = Map(source);");
+        sb.AppendLine($"        var __result = To(source);");
         sb.AppendLine($"        return Unsafe.As<{config.DestinationType}, TDestination>(ref __result);");
         sb.AppendLine("    }");
     }
@@ -468,7 +466,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
         sb.AppendLine("    /// JIT-optimized: cache-ordered writes, value-types first (branchless), refs last.");
         sb.AppendLine("    /// </summary>");
         sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]");
-        sb.AppendLine($"    public static void Map({config.SourceType} source, {config.DestinationType} destination)");
+        sb.AppendLine($"    public static void To({config.SourceType} source, {config.DestinationType} destination)");
         sb.AppendLine("    {");
 
         // PHASE 1: Branchless value-type assignments (best for CPU pipelining)
@@ -514,14 +512,14 @@ public sealed class MapperGenerator : IIncrementalGenerator
                     {
                         sb.AppendLine($"        if (source.{sourceProp.Name} is {{ }} _src{destProp.Name})");
                         sb.AppendLine("        {");
-                        sb.AppendLine($"            if (destination.{destProp.Name} is {{ }} _dst{destProp.Name}) Map(_src{destProp.Name}, _dst{destProp.Name});");
-                        sb.AppendLine($"            else destination.{destProp.Name} = Map(_src{destProp.Name});");
+                        sb.AppendLine($"            if (destination.{destProp.Name} is {{ }} _dst{destProp.Name}) To(_src{destProp.Name}, _dst{destProp.Name});");
+                        sb.AppendLine($"            else destination.{destProp.Name} = To(_src{destProp.Name});");
                         sb.AppendLine("        }");
                         sb.AppendLine($"        else destination.{destProp.Name} = null;");
                     }
                     else if (!sourceIsRef && !destIsRef)
                     {
-                        sb.AppendLine($"        destination.{destProp.Name} = Map(source.{sourceProp.Name});");
+                        sb.AppendLine($"        destination.{destProp.Name} = To(source.{sourceProp.Name});");
                     }
                 }
             }
@@ -534,91 +532,122 @@ public sealed class MapperGenerator : IIncrementalGenerator
     {
         foreach (var mapping in mappings)
         {
-            // List mapping with Span optimization
+            // ToList<TDestination> - Generic API with constraint, accepts any IEnumerable
             sb.AppendLine();
-            sb.AppendLine($"    /// <summary>Maps a list of {mapping.SourceTypeName} to {mapping.DestinationTypeName}. Optimized with Span for minimal allocations.</summary>");
+            sb.AppendLine($"    /// <summary>Maps IEnumerable of {mapping.SourceTypeName} to List of {mapping.DestinationTypeName}. Span-optimized for maximum performance.</summary>");
             sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]");
-            sb.AppendLine($"    public static System.Collections.Generic.List<{mapping.DestinationType}> MapList(System.Collections.Generic.List<{mapping.SourceType}>? source)");
+            sb.AppendLine($"    public static System.Collections.Generic.List<TDestination> ToList<TDestination>(System.Collections.Generic.IEnumerable<{mapping.SourceType}>? source) where TDestination : {mapping.DestinationType}");
             sb.AppendLine("    {");
-            sb.AppendLine("        if (source is null || source.Count == 0)");
-            sb.AppendLine($"            return new System.Collections.Generic.List<{mapping.DestinationType}>();");
+            sb.AppendLine("        if (source is null)");
+            sb.AppendLine($"            return new System.Collections.Generic.List<TDestination>();");
             sb.AppendLine();
-            sb.AppendLine("        var count = source.Count;");
-            sb.AppendLine($"        var result = new System.Collections.Generic.List<{mapping.DestinationType}>(count);");
-            sb.AppendLine();
+            sb.AppendLine("        // Fast path for List<T> - use Span for zero virtual calls");
+            sb.AppendLine($"        if (source is System.Collections.Generic.List<{mapping.SourceType}> sourceList)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            if (sourceList.Count == 0) return new System.Collections.Generic.List<TDestination>();");
+            sb.AppendLine("            var count = sourceList.Count;");
+            sb.AppendLine("            var result = new System.Collections.Generic.List<TDestination>(count);");
             sb.AppendLine("#if NET8_0_OR_GREATER");
-            sb.AppendLine("        var sourceSpan = CollectionsMarshal.AsSpan(source);");
-            sb.AppendLine("        CollectionsMarshal.SetCount(result, count);");
-            sb.AppendLine("        var destSpan = CollectionsMarshal.AsSpan(result);");
-            sb.AppendLine();
-            sb.AppendLine("        for (int i = 0; i < sourceSpan.Length; i++)");
-            sb.AppendLine("        {");
-            sb.AppendLine("            destSpan[i] = Map(sourceSpan[i]);");
-            sb.AppendLine("        }");
+            sb.AppendLine("            var sourceSpan = CollectionsMarshal.AsSpan(sourceList);");
+            sb.AppendLine("            CollectionsMarshal.SetCount(result, count);");
+            sb.AppendLine("            var destSpan = CollectionsMarshal.AsSpan(result);");
+            sb.AppendLine("            for (int i = 0; i < sourceSpan.Length; i++)");
+            sb.AppendLine("            {");
+            sb.AppendLine($"                var mapped = To(sourceSpan[i]);");
+            sb.AppendLine($"                destSpan[i] = Unsafe.As<{mapping.DestinationType}, TDestination>(ref mapped);");
+            sb.AppendLine("            }");
             sb.AppendLine("#else");
-            sb.AppendLine("        foreach (var item in source)");
-            sb.AppendLine("        {");
-            sb.AppendLine("            result.Add(Map(item));");
-            sb.AppendLine("        }");
+            sb.AppendLine("            foreach (var item in sourceList)");
+            sb.AppendLine($"                result.Add((TDestination)(object)To(item)!);");
             sb.AppendLine("#endif");
-            sb.AppendLine();
-            sb.AppendLine("        return result;");
-            sb.AppendLine("    }");
-
-            // Array mapping with Span
-            sb.AppendLine();
-            sb.AppendLine($"    /// <summary>Maps an array of {mapping.SourceTypeName} to {mapping.DestinationTypeName}. Uses Span for zero-copy iteration.</summary>");
-            sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]");
-            sb.AppendLine($"    public static {mapping.DestinationType}[] MapArray({mapping.SourceType}[]? source)");
-            sb.AppendLine("    {");
-            sb.AppendLine("        if (source is null || source.Length == 0)");
-            sb.AppendLine($"            return Array.Empty<{mapping.DestinationType}>();");
-            sb.AppendLine();
-            sb.AppendLine($"        var result = new {mapping.DestinationType}[source.Length];");
-            sb.AppendLine("        var sourceSpan = source.AsSpan();");
-            sb.AppendLine("        var destSpan = result.AsSpan();");
-            sb.AppendLine();
-            sb.AppendLine("        for (int i = 0; i < sourceSpan.Length; i++)");
-            sb.AppendLine("        {");
-            sb.AppendLine("            destSpan[i] = Map(sourceSpan[i]);");
+            sb.AppendLine("            return result;");
             sb.AppendLine("        }");
             sb.AppendLine();
-            sb.AppendLine("        return result;");
-            sb.AppendLine("    }");
-
-            // ReadOnlySpan input for advanced scenarios
-            sb.AppendLine();
-            sb.AppendLine($"    /// <summary>Maps a ReadOnlySpan of {mapping.SourceTypeName} to array of {mapping.DestinationTypeName}. Maximum performance, zero-copy source iteration.</summary>");
-            sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]");
-            sb.AppendLine($"    public static {mapping.DestinationType}[] MapSpan(ReadOnlySpan<{mapping.SourceType}> source)");
-            sb.AppendLine("    {");
-            sb.AppendLine("        if (source.IsEmpty)");
-            sb.AppendLine($"            return Array.Empty<{mapping.DestinationType}>();");
-            sb.AppendLine();
-            sb.AppendLine($"        var result = new {mapping.DestinationType}[source.Length];");
-            sb.AppendLine("        var destSpan = result.AsSpan();");
-            sb.AppendLine();
-            sb.AppendLine("        for (int i = 0; i < source.Length; i++)");
+            sb.AppendLine("        // Fast path for arrays - use Span");
+            sb.AppendLine($"        if (source is {mapping.SourceType}[] sourceArray)");
             sb.AppendLine("        {");
-            sb.AppendLine("            destSpan[i] = Map(source[i]);");
+            sb.AppendLine("            if (sourceArray.Length == 0) return new System.Collections.Generic.List<TDestination>();");
+            sb.AppendLine("            var result = new System.Collections.Generic.List<TDestination>(sourceArray.Length);");
+            sb.AppendLine("            var sourceSpan = sourceArray.AsSpan();");
+            sb.AppendLine("            foreach (ref readonly var item in sourceSpan)");
+            sb.AppendLine($"                result.Add((TDestination)(object)To(item)!);");
+            sb.AppendLine("            return result;");
             sb.AppendLine("        }");
             sb.AppendLine();
-            sb.AppendLine("        return result;");
+            sb.AppendLine("        // Slow path for other IEnumerable");
+            sb.AppendLine("        var list = new System.Collections.Generic.List<TDestination>();");
+            sb.AppendLine("        foreach (var item in source)");
+            sb.AppendLine($"            list.Add((TDestination)(object)To(item)!);");
+            sb.AppendLine("        return list;");
             sb.AppendLine("    }");
 
-            // Map to existing Span for true zero-allocation
+            // ToArray<TDestination> - Generic API with constraint
             sb.AppendLine();
-            sb.AppendLine($"    /// <summary>Maps source span to destination span. TRUE zero-allocation mapping.</summary>");
+            sb.AppendLine($"    /// <summary>Maps IEnumerable of {mapping.SourceTypeName} to array of {mapping.DestinationTypeName}. Span-optimized for zero-copy iteration.</summary>");
             sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]");
-            sb.AppendLine($"    public static void MapSpanTo(ReadOnlySpan<{mapping.SourceType}> source, Span<{mapping.DestinationType}> destination)");
+            sb.AppendLine($"    public static TDestination[] ToArray<TDestination>(System.Collections.Generic.IEnumerable<{mapping.SourceType}>? source) where TDestination : {mapping.DestinationType}");
+            sb.AppendLine("    {");
+            sb.AppendLine("        if (source is null)");
+            sb.AppendLine("            return Array.Empty<TDestination>();");
+            sb.AppendLine();
+            sb.AppendLine("        // Fast path for arrays - use Span directly");
+            sb.AppendLine($"        if (source is {mapping.SourceType}[] sourceArray)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            if (sourceArray.Length == 0) return Array.Empty<TDestination>();");
+            sb.AppendLine("            var result = new TDestination[sourceArray.Length];");
+            sb.AppendLine("            var sourceSpan = sourceArray.AsSpan();");
+            sb.AppendLine("            var destSpan = result.AsSpan();");
+            sb.AppendLine("            for (int i = 0; i < sourceSpan.Length; i++)");
+            sb.AppendLine($"                destSpan[i] = (TDestination)(object)To(sourceSpan[i])!;");
+            sb.AppendLine("            return result;");
+            sb.AppendLine("        }");
+            sb.AppendLine();
+            sb.AppendLine("        // Fast path for List<T> - use CollectionsMarshal.AsSpan");
+            sb.AppendLine($"        if (source is System.Collections.Generic.List<{mapping.SourceType}> sourceList)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            if (sourceList.Count == 0) return Array.Empty<TDestination>();");
+            sb.AppendLine("            var result = new TDestination[sourceList.Count];");
+            sb.AppendLine("#if NET8_0_OR_GREATER");
+            sb.AppendLine("            var sourceSpan = CollectionsMarshal.AsSpan(sourceList);");
+            sb.AppendLine("            var destSpan = result.AsSpan();");
+            sb.AppendLine("            for (int i = 0; i < sourceSpan.Length; i++)");
+            sb.AppendLine($"                destSpan[i] = (TDestination)(object)To(sourceSpan[i])!;");
+            sb.AppendLine("#else");
+            sb.AppendLine("            int idx = 0;");
+            sb.AppendLine("            foreach (var item in sourceList)");
+            sb.AppendLine($"                result[idx++] = (TDestination)(object)To(item)!;");
+            sb.AppendLine("#endif");
+            sb.AppendLine("            return result;");
+            sb.AppendLine("        }");
+            sb.AppendLine();
+            sb.AppendLine("        // Slow path - materialize to list first");
+            sb.AppendLine("        return ToList<TDestination>(source).ToArray();");
+            sb.AppendLine("    }");
+
+            // ToSpan - For advanced zero-allocation scenarios
+            sb.AppendLine();
+            sb.AppendLine($"    /// <summary>Maps ReadOnlySpan of {mapping.SourceTypeName} to Span of {mapping.DestinationTypeName}. TRUE zero-allocation mapping.</summary>");
+            sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]");
+            sb.AppendLine($"    public static void ToSpan(ReadOnlySpan<{mapping.SourceType}> source, Span<{mapping.DestinationType}> destination)");
             sb.AppendLine("    {");
             sb.AppendLine("        if (source.Length > destination.Length)");
             sb.AppendLine("            throw new ArgumentException(\"Destination span must be at least as long as source span.\", nameof(destination));");
             sb.AppendLine();
             sb.AppendLine("        for (int i = 0; i < source.Length; i++)");
-            sb.AppendLine("        {");
-            sb.AppendLine("            destination[i] = Map(source[i]);");
-            sb.AppendLine("        }");
+            sb.AppendLine("            destination[i] = To(source[i]);");
+            sb.AppendLine("    }");
+
+            // ToEnumerable - For lazy evaluation scenarios
+            sb.AppendLine();
+            sb.AppendLine($"    /// <summary>Maps IEnumerable of {mapping.SourceTypeName} to IEnumerable of {mapping.DestinationTypeName}. Lazy evaluation with deferred execution.</summary>");
+            sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+            sb.AppendLine($"    public static System.Collections.Generic.IEnumerable<TDestination> ToEnumerable<TDestination>(System.Collections.Generic.IEnumerable<{mapping.SourceType}>? source) where TDestination : {mapping.DestinationType}");
+            sb.AppendLine("    {");
+            sb.AppendLine("        if (source is null)");
+            sb.AppendLine("            yield break;");
+            sb.AppendLine();
+            sb.AppendLine("        foreach (var item in source)");
+            sb.AppendLine($"            yield return (TDestination)(object)To(item)!;");
             sb.AppendLine("    }");
         }
     }
@@ -774,7 +803,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
             else if (HasMapping(sourceProp.Type, destProp.Type, mappings))
             {
                 // Recursive inline for deeply nested (max 1 level for now)
-                assignments.Add($"{destProp.Name} = Map({sourceExpr}.{sourceProp.Name})");
+                assignments.Add($"{destProp.Name} = To({sourceExpr}.{sourceProp.Name})");
             }
         }
 
@@ -802,7 +831,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
             sb.AppendLine($"    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
             sb.AppendLine($"    partial void MapInternal({mapping.SourceType} source, {mapping.DestinationType} destination)");
             sb.AppendLine("    {");
-            sb.AppendLine($"        Velocity.Map(source, destination);");
+            sb.AppendLine($"        Mapper.To(source, destination);");
             sb.AppendLine("    }");
         }
 
