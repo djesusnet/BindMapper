@@ -270,21 +270,6 @@ public sealed class MapperGenerator : IIncrementalGenerator
         sb.AppendLine();
         sb.AppendLine("public static partial class Mapper");
         sb.AppendLine("{");
-        sb.AppendLine("    /// <summary>Creates a mapping configuration for the Source Generator to analyze.</summary>");
-        sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        sb.AppendLine("    public static MapperConfiguration<TSource, TDestination> CreateMap<TSource, TDestination>()");
-        sb.AppendLine("    {");
-        sb.AppendLine("        return new MapperConfiguration<TSource, TDestination>();");
-        sb.AppendLine("    }");
-        sb.AppendLine();
-        sb.AppendLine("    /// <summary>Creates a mapping configuration with custom options.</summary>");
-        sb.AppendLine("    [MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        sb.AppendLine("    public static MapperConfiguration<TSource, TDestination> CreateMap<TSource, TDestination>(Action<MapperConfiguration<TSource, TDestination>> config)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        var cfg = new MapperConfiguration<TSource, TDestination>();");
-        sb.AppendLine("        config(cfg);");
-        sb.AppendLine("        return cfg;");
-        sb.AppendLine("    }");
 
         foreach (var mapping in mappings)
         {

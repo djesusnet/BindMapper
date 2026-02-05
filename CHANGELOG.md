@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2] - 2026-02-04
+
+### Changed
+
+- **BREAKING**: Moved `CreateMap` from `Mapper` to `Configuration` class to avoid naming conflicts
+  - Old: `Mapper.CreateMap<User, UserDto>()`
+  - New: `Configuration.CreateMap<User, UserDto>()`
+- Updated all internal APIs to use `Configuration` for setup
+
+### Why This Change?
+
+This prevents conflicts when users have their own `Mapper` class in their projects. The `Mapper` class is now exclusively for mapping operations (`To<T>()`, `ToList<T>()`, etc.), while `Configuration` is exclusively for setup (`CreateMap<T, U>()`).
+
+### Migration from 1.1.1
+
+```csharp
+// Before (v1.1.1)
+Mapper.CreateMap<User, UserDto>();
+var dto = Mapper.To<UserDto>(user);
+
+// After (v1.1.2)
+Configuration.CreateMap<User, UserDto>();
+var dto = Mapper.To<UserDto>(user);  // Mapping stays the same!
+```
+
 ## [1.1.1] - 2026-02-04
 
 ### Added

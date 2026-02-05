@@ -2,20 +2,6 @@ using System.Runtime.CompilerServices;
 
 namespace VelocityMapper;
 
-/// <summary>
-/// High-performance object mapper - faster than hand-written code.
-/// Uses Source Generators for compile-time code generation with zero reflection.
-/// </summary>
-/// <remarks>
-/// <para>Usage:</para>
-/// <code>
-/// // Create new instance (12.03 ns - faster than manual code!)
-/// var dto = Mapper.To&lt;UserDto&gt;(user);
-/// 
-/// // Map to existing object (zero allocation)
-/// Mapper.To(user, existingDto);
-/// </code>
-/// </remarks>
 public static partial class Mapper
 {
     /// <summary>
