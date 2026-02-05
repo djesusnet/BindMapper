@@ -4,30 +4,30 @@
 
 # VelocityMapper
 
-**O mapper .NET mais rápido. Zero reflection. Zero overhead.**
+**The fastest .NET mapper. Zero reflection. Zero overhead.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![NuGet](https://img.shields.io/nuget/v/VelocityMapper.svg)](https://www.nuget.org/packages/VelocityMapper/)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/VelocityMapper.svg)](https://www.nuget.org/packages/VelocityMapper/)
 [![.NET](https://img.shields.io/badge/.NET-6%20%7C%208%20%7C%209%20%7C%2010-512BD4)](https://dotnet.microsoft.com/)
 
-VelocityMapper usa **Source Generators** para gerar código de mapeamento otimizado em tempo de compilação. API familiar estilo AutoMapper, performance superior.
+VelocityMapper uses **Source Generators** to generate optimized mapping code at compile-time. Familiar AutoMapper-style API with superior performance.
 
 ---
 
-## 📦 Instalação
+## 📦 Installation
 
 ```bash
 dotnet add package VelocityMapper
 ```
 
-Frameworks suportados: .NET 6, 8, 9, 10
+Supported frameworks: .NET 6, 8, 9, 10
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Crie seus models
+### 1. Create your models
 
 ```csharp
 public class User
@@ -47,7 +47,7 @@ public class UserDto
 }
 ```
 
-### 2. Configure os mapeamentos
+### 2. Configure mappings
 
 ```csharp
 using VelocityMapper;
@@ -63,15 +63,15 @@ public static class MappingConfig
 }
 ```
 
-### 3. Use o mapper
+### 3. Use the mapper
 
 ```csharp
-var user = new User { Id = 1, Name = "João", Email = "joao@email.com" };
+var user = new User { Id = 1, Name = "John", Email = "john@email.com" };
 
-// ⚡ Criar nova instância
+// ⚡ Create new instance
 var dto = Mapper.To<UserDto>(user);
 
-// Zero allocation - mapear para objeto existente
+// Zero allocation - map to existing object
 var existingDto = new UserDto();
 Mapper.To(user, existingDto);
 ```
@@ -80,26 +80,26 @@ Mapper.To(user, existingDto);
 
 ## 📚 API
 
-### Mapeamento Básico
+### Basic Mapping
 
 ```csharp
-// Nova instância
+// New instance
 var dto = Mapper.To<UserDto>(user);
 
-// Para objeto existente (zero allocation)
+// To existing object (zero allocation)
 Mapper.To(user, existingDto);
 ```
 
-### Mapeamento de Coleções
+### Collection Mapping
 
 ```csharp
-// ⚡ NOVA API - Mais limpa e com Span!
+// ⚡ NEW API - Cleaner and faster with Span!
 var users = GetUsers(); // List<User>, User[], IEnumerable<User>
 
-// ToList - Auto-otimizado com CollectionsMarshal.AsSpan (.NET 8+)
+// ToList - Auto-optimized with CollectionsMarshal.AsSpan (.NET 8+)
 List<UserDto> dtos = Mapper.ToList<UserDto>(users);
 
-// ToArray - Otimizado com Span zero-copy
+// ToArray - Optimized with Span zero-copy
 UserDto[] array = Mapper.ToArray<UserDto>(users);
 
 // ToEnumerable - Lazy evaluation (deferred execution)
@@ -110,17 +110,17 @@ var filtered = enumerable.Where(x => x.Id > 10).ToList();
 Span<UserDto> destination = stackalloc UserDto[100];
 Mapper.ToSpan(users.AsSpan(), destination);
 
-// API Legada (ainda suportada, mas ToList/ToArray são mais rápidos)
+// Legacy API (still supported, but ToList/ToArray are faster)
 List<UserDto> dtos2 = CollectionMapper.MapToList(users, Mapper.To<UserDto>);
 ```
 
 ---
 
-## 🔄 Comportamento de Mapeamento
+## 🔄 Mapping Behavior
 
-### Propriedades Extras são Ignoradas Automaticamente
+### Extra Properties are Automatically Ignored
 
-O VelocityMapper mapeia baseado nas **propriedades do destino**. Propriedades que existem apenas na origem são automaticamente ignoradas:
+VelocityMapper maps based on **destination properties**. Properties that exist only in the source are automatically ignored:
 
 ```csharp
 public class User
@@ -128,7 +128,7 @@ public class User
     public int Id { get; set; }
     public string Name { get; set; }
     public string Email { get; set; }
-    public string PasswordHash { get; set; }  // Só existe na entidade
+    public string PasswordHash { get; set; }  // Only exists in entity
 }
 
 public class UserDto
@@ -136,31 +136,31 @@ public class UserDto
     public int Id { get; set; }
     public string Name { get; set; }
     public string Email { get; set; }
-    // PasswordHash não existe → ignorado automaticamente!
+    // PasswordHash doesn't exist → ignored automatically!
 }
 
 var dto = Mapper.To<UserDto>(user);
-// dto terá: Id, Name, Email
-// PasswordHash é ignorado silenciosamente ✓
+// dto will have: Id, Name, Email
+// PasswordHash is silently ignored ✓
 ```
 
-| Cenário | Comportamento |
-|---------|---------------|
-| Propriedade existe em ambos | ✅ Mapeia |
-| Propriedade só na origem | ✅ Ignora silenciosamente |
-| Propriedade só no destino | ✅ Mantém valor padrão |
+| Scenario | Behavior |
+|----------|----------|
+| Property exists in both | ✅ Maps |
+| Property only in source | ✅ Silently ignores |
+| Property only in destination | ✅ Keeps default value |
 
-### Atributos
+### Attributes
 
 ```csharp
 public class UserDto
 {
     public int Id { get; set; }
     
-    [MapFrom("FirstName")]  // Mapeia de propriedade com nome diferente
+    [MapFrom("FirstName")]  // Map from differently named property
     public string Name { get; set; }
     
-    [IgnoreMap]  // Ignora explicitamente (documentação)
+    [IgnoreMap]  // Explicitly ignore (documentation)
     public string CacheKey { get; set; }
 }
 ```
@@ -169,37 +169,37 @@ public class UserDto
 
 ## 🏎️ Performance
 
-Benchmark no .NET 10 (Intel Core i5-14600KF):
+Benchmark on .NET 10 (Intel Core i5-14600KF):
 
-| Mapper | Tempo | Comparação |
-|--------|-------|------------|
-| **VelocityMapper** | **12.03 ns** | Mais rápido |
+| Mapper | Time | Comparison |
+|--------|------|-----------|
+| **VelocityMapper** | **12.03 ns** | Fastest |
 | Manual | 12.22 ns | baseline |
-| Mapperly | 12.29 ns | 2% mais lento |
-| Mapster | 18.91 ns | 57% mais lento |
-| AutoMapper | 32.87 ns | 173% mais lento |
+| Mapperly | 12.29 ns | 2% slower |
+| Mapster | 18.91 ns | 57% slower |
+| AutoMapper | 32.87 ns | 173% slower |
 
-VelocityMapper é mais rápido que código escrito à mão.
+VelocityMapper is faster than hand-written code.
 
 ---
 
-## 🔧 Como Funciona
+## 🔧 How It Works
 
-O Source Generator analisa seu código em tempo de compilação e gera métodos otimizados:
+The Source Generator analyzes your code at compile-time and generates optimized methods:
 
 ```csharp
-// Você escreve:
+// You write:
 Mapper.CreateMap<User, UserDto>();
 var dto = Mapper.To<UserDto>(user);
 
-// O gerador cria automaticamente:
+// The generator automatically creates:
 public static UserDto To(User source)
 {
     return new UserDto
     {
-        Id = source.Id,           // Value types primeiro (cache-friendly)
+        Id = source.Id,           // Value types first (cache-friendly)
         Age = source.Age,
-        Name = source.Name,       // Reference types depois
+        Name = source.Name,       // Reference types after
         Email = source.Email,
         Address = source.Address is { } addr ? To(addr) : null  // Nested mapping
     };
@@ -208,23 +208,23 @@ public static UserDto To(User source)
 
 ---
 
-## 📋 Referência Rápida
+## 📋 Quick Reference
 
-| Método | Uso | Allocation | Performance |
-|--------|-----|------------|-------------|
-| `Mapper.To<TDest>(source)` | Nova instância | DTO size | ⚡⚡⚡ 12ns |
-| `Mapper.To(source, dest)` | Objeto existente | 0 B | ⚡⚡⚡ Zero alloc |
-| `Mapper.ToList<TDest>(enumerable)` | IEnumerable → Lista | List + DTOs | ⚡⚡⚡ Span-optimized |
+| Method | Usage | Allocation | Performance |
+|--------|-------|-----------|-------------|
+| `Mapper.To<TDest>(source)` | New instance | DTO size | ⚡⚡⚡ 12ns |
+| `Mapper.To(source, dest)` | Existing object | 0 B | ⚡⚡⚡ Zero alloc |
+| `Mapper.ToList<TDest>(enumerable)` | IEnumerable → List | List + DTOs | ⚡⚡⚡ Span-optimized |
 | `Mapper.ToArray<TDest>(enumerable)` | IEnumerable → Array | Array + DTOs | ⚡⚡⚡ Span zero-copy |
 | `Mapper.ToEnumerable<TDest>(enumerable)` | IEnumerable → IEnumerable | Lazy | ⚡⚡⚡ Deferred execution |
 | `Mapper.ToSpan(src, dest)` | Span → Span | 0 B | ⚡⚡⚡ TRUE zero alloc |
-| `CollectionMapper.*` (legado) | Compatibilidade | List + DTOs | ⚡⚡ Mais lento |
+| `CollectionMapper.*` (legacy) | Compatibility | List + DTOs | ⚡⚡ Slower |
 
-**Nova API**: `ToList`, `ToArray` e `ToEnumerable` detectam automaticamente List/Array e usam fast-path com Span!
+**New API**: `ToList`, `ToArray` and `ToEnumerable` automatically detect List/Array and use fast-path with Span!
 
 ---
 
-## 📄 Licença
+## 📄 License
 
-MIT License - veja [LICENSE](LICENSE)
+MIT License - see [LICENSE](LICENSE)
 
