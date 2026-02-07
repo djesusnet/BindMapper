@@ -1,6 +1,3 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/djesusnet/BindMapper/refs/heads/main/assets/icon.png" alt="BindMapper Logo" width="120">
-</p>
 
 # BindMapper
 
