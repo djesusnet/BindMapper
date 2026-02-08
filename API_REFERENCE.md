@@ -180,16 +180,16 @@ var topUsers = query.ToList();
 
 ## ⚠️ API Legada (Compatibilidade)
 
-Ainda funciona, mas a nova API é mais rápida e limpa:
+As APIs legadas como `MapToList` e `MapToArray` ainda funcionam:
 
 ```csharp
-// ❌ Antiga - verbose
-CollectionMapper.MapToList(users, Mapper.To<UserDto>);
-CollectionMapper.MapToArray(users, Mapper.To<UserDto>);
-
-// ✅ Nova - limpa e rápida
+// ✅ API moderna (recomendada)
 Mapper.ToList<UserDto>(users);
 Mapper.ToArray<UserDto>(users);
+
+// ✅ API legada (ainda suportada)
+Mapper.MapToList(users, user => Mapper.To<UserDto>(user));
+Mapper.MapToArray(users, user => Mapper.To<UserDto>(user));
 ```
 
 ---

@@ -154,7 +154,7 @@ for (int i = 0; i < users.Length; i += BatchSize)
 
 ## 🎯 Resumo
 
-| Característica | ToList/ToArray | CollectionMapper | ToSpan |
+| Característica | ToList/ToArray | MapToList/MapToArray | ToSpan |
 |----------------|----------------|------------------|--------|
 | Sintaxe | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
 | Performance | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |

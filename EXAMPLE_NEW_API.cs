@@ -68,7 +68,7 @@ class Program
         
         // Antiga (ainda funciona, mas verbose)
         Console.WriteLine("API Antiga:");
-        Console.WriteLine("  CollectionMapper.MapToList(users, Mapper.To<UserDto>)");
+        Console.WriteLine("  Mapper.ToList<UserDto>(users)");
         
         // Nova (limpa e rápida!)
         Console.WriteLine("\nNova API:");
