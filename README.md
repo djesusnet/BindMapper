@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/djesusnet/BindMapper/main/assets/icon.png" alt="BindMapper Logo" width="200"/>
+</p>
+
+
 # BindMapper
 
 **BindMapper** is a high-performance object-to-object mapper for .NET, powered by **Source Generators**.  
