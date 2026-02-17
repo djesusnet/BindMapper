@@ -1,6 +1,7 @@
 using FluentAssertions;
 using BindMapper.Tests.Models;
 using Xunit;
+using AutoFixture;
 
 namespace BindMapper.Tests;
 
@@ -9,6 +10,7 @@ namespace BindMapper.Tests;
 /// </summary>
 public class NewCollectionApiTests
 {
+    private readonly Fixture _fixture = new Fixture();
     public NewCollectionApiTests()
     {
         TestMapperConfig.EnsureConfigured();
@@ -18,40 +20,35 @@ public class NewCollectionApiTests
     public void ToList_WithListInput_ShouldMapAllItemsUsingSpan()
     {
         // Arrange
-        var users = new List<Person>
-        {
-            new() { Id = 1, FirstName = "John", LastName = "Doe", Age = 30 },
-            new() { Id = 2, FirstName = "Jane", LastName = "Smith", Age = 25 },
-            new() { Id = 3, FirstName = "Bob", LastName = "Johnson", Age = 35 }
-        };
+        var users = _fixture.CreateMany<Person>(3).ToList(); 
 
         // Act - Nova API mais limpa!
         var dtos = Mapper.ToList<PersonDto>(users);
 
         // Assert
-        dtos.Should().HaveCount(3);
-        dtos[0].FirstName.Should().Be("John");
-        dtos[1].FirstName.Should().Be("Jane");
-        dtos[2].FirstName.Should().Be("Bob");
+        for (int i = 0; i < users.Count; i++)
+        {
+            dtos[i].FirstName.Should().Be(users[i].FirstName);
+            dtos[i].LastName.Should().Be(users[i].LastName);
+            dtos[i].Age.Should().Be(users[i].Age);
+        }
     }
 
     [Fact]
     public void ToArray_WithArrayInput_ShouldMapAllItemsUsingSpan()
     {
         // Arrange
-        var users = new[]
-        {
-            new Person { Id = 1, FirstName = "Alice", LastName = "Wonder", Age = 28 },
-            new Person { Id = 2, FirstName = "Charlie", LastName = "Brown", Age = 32 }
-        };
-
+        var users = _fixture.CreateMany<Person>(2).ToList();
+        
         // Act - API super limpa e performática!
         var dtos = Mapper.ToArray<PersonDto>(users);
 
         // Assert
-        dtos.Should().HaveCount(2);
-        dtos[0].FirstName.Should().Be("Alice");
-        dtos[1].FirstName.Should().Be("Charlie");
+        dtos.Should().HaveSameCount(users);
+        for (int i = 0; i < users.Count; i++)
+        {
+            dtos[i].FirstName.Should().Be(users[i].FirstName);
+        }
     }
 
     [Fact]
@@ -123,51 +120,39 @@ public class NewCollectionApiTests
     public void ToSpan_ShouldMapWithZeroAllocation()
     {
         // Arrange
-        var source = new[]
-        {
-            new Person { Id = 1, FirstName = "Zero", LastName = "Alloc", Age = 30 },
-            new Person { Id = 2, FirstName = "Max", LastName = "Perf", Age = 25 }
-        };
-        var destination = new PersonDto[2];
+        var source = _fixture.CreateMany<Person>(2).ToArray();
+        var destination = new PersonDto[source.Length];
 
         // Act - TRUE zero allocation!
         Mapper.ToSpan(source.AsSpan(), destination.AsSpan());
 
         // Assert
-        destination[0].FirstName.Should().Be("Zero");
-        destination[1].FirstName.Should().Be("Max");
+        destination.Should().HaveSameCount(source);
+        destination.Should().BeEquivalentTo(source,options => options.WithStrictOrdering());
     }
 
     [Fact]
     public void ToEnumerable_ShouldMapWithLazyEvaluation()
     {
         // Arrange
-        var users = new List<Person>
-        {
-            new() { Id = 1, FirstName = "Lazy", LastName = "Load", Age = 30 },
-            new() { Id = 2, FirstName = "Deferred", LastName = "Exec", Age = 25 }
-        };
+        var users = _fixture.CreateMany<Person>(2).ToList();
 
         // Act - Lazy evaluation, não executa imediatamente
         IEnumerable<PersonDto> enumerable = Mapper.ToEnumerable<PersonDto>(users);
 
         // Assert - Só materializa quando iterado
         var list = enumerable.ToList();
-        list.Should().HaveCount(2);
-        list[0].FirstName.Should().Be("Lazy");
-        list[1].FirstName.Should().Be("Deferred");
+        list.Should().HaveSameCount(users);
+        list.Should().BeEquivalentTo(
+            users,
+            options => options.WithStrictOrdering());
     }
 
     [Fact]
     public void ToEnumerable_WithWhere_ShouldSupportLinq()
     {
         // Arrange
-        var users = new List<Person>
-        {
-            new() { Id = 1, FirstName = "John", LastName = "Doe", Age = 30 },
-            new() { Id = 2, FirstName = "Jane", LastName = "Smith", Age = 25 },
-            new() { Id = 3, FirstName = "Bob", LastName = "Johnson", Age = 35 }
-        };
+        var users = _fixture.CreateMany<Person>(3).ToList();
 
         // Act - ToEnumerable suporta LINQ!
         var result = Mapper.ToEnumerable<PersonDto>(users)
@@ -175,9 +160,8 @@ public class NewCollectionApiTests
             .ToList();
 
         // Assert
-        result.Should().HaveCount(2);
-        result[0].FirstName.Should().Be("John");
-        result[1].FirstName.Should().Be("Bob");
+        result.Should().HaveSameCount(users);
+        result.Should().BeEquivalentTo(result, options => options.WithStrictOrdering());
     }
 
     private static IEnumerable<Person> GetUsersEnumerable()

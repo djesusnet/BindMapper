@@ -1,6 +1,7 @@
 using FluentAssertions;
 using BindMapper.Tests.Models;
 using Xunit;
+using AutoFixture;
 
 namespace BindMapper.Tests;
 
@@ -9,6 +10,7 @@ namespace BindMapper.Tests;
 /// </summary>
 public class CollectionMappingTests
 {
+    private readonly Fixture _fixture = new Fixture();
     public CollectionMappingTests()
     {
         TestMapperConfig.EnsureConfigured();
@@ -18,22 +20,14 @@ public class CollectionMappingTests
     public void MapList_ShouldMapAllItems()
     {
         // Arrange
-        var sources = new List<SimpleSource>
-        {
-            new() { Value = 1, Text = "One" },
-            new() { Value = 2, Text = "Two" },
-            new() { Value = 3, Text = "Three" }
-        };
+        var sources = _fixture.CreateMany<SimpleSource>(3).ToList();
 
         // Act
         var result = Mapper.ToList<SimpleDestination>(sources);
 
         // Assert
-        result.Should().HaveCount(3);
-        result[0].Value.Should().Be(1);
-        result[0].Text.Should().Be("One");
-        result[1].Value.Should().Be(2);
-        result[2].Value.Should().Be(3);
+        result.Should().HaveSameCount(sources);
+        result.Should().BeEquivalentTo(sources, options => options.WithStrictOrdering());
     }
 
     [Fact]
@@ -68,19 +62,14 @@ public class CollectionMappingTests
     public void MapArray_ShouldMapAllItems()
     {
         // Arrange
-        var sources = new[]
-        {
-            new SimpleSource { Value = 10, Text = "Ten" },
-            new SimpleSource { Value = 20, Text = "Twenty" }
-        };
+        var sources = _fixture.CreateMany<SimpleSource>(2).ToArray();
 
         // Act
         var result = Mapper.ToArray<SimpleDestination>(sources);
 
         // Assert
-        result.Should().HaveCount(2);
-        result[0].Value.Should().Be(10);
-        result[1].Value.Should().Be(20);
+        result.Should().HaveSameCount(sources);
+        result.Should().BeEquivalentTo(sources, options => options.WithStrictOrdering());
     }
 
     [Fact]
@@ -115,36 +104,28 @@ public class CollectionMappingTests
     public void MapEnumerable_FromList_ShouldMapAllItems()
     {
         // Arrange
-        IEnumerable<SimpleSource> sources = new List<SimpleSource>
-        {
-            new() { Value = 1 },
-            new() { Value = 2 }
-        };
+        IEnumerable<SimpleSource> sources = _fixture.CreateMany<SimpleSource>(2).ToList();
 
         // Act
         var result = Mapper.ToList<SimpleDestination>(sources);
 
         // Assert
-        result.Should().HaveCount(2);
+        result.Should().HaveSameCount(sources);
+        result.Should().BeEquivalentTo(sources,options => options.WithStrictOrdering());
     }
 
     [Fact]
     public void MapEnumerable_FromArray_ShouldMapAllItems()
     {
         // Arrange
-        IEnumerable<SimpleSource> sources = new[]
-        {
-            new SimpleSource { Value = 5 },
-            new SimpleSource { Value = 10 }
-        };
+        IEnumerable<SimpleSource> sources = _fixture.CreateMany<SimpleSource>(2).ToList();
 
         // Act
         var result = Mapper.ToList<SimpleDestination>(sources);
 
         // Assert
-        result.Should().HaveCount(2);
-        result[0].Value.Should().Be(5);
-        result[1].Value.Should().Be(10);
+        result.Should().HaveSameCount(sources);
+        result.Should().BeEquivalentTo(sources, options => options.WithStrictOrdering());
     }
 
     [Fact]
@@ -165,18 +146,13 @@ public class CollectionMappingTests
     public void MapToList_FromCollection_ShouldMapAllItems()
     {
         // Arrange
-        ICollection<SimpleSource> sources = new List<SimpleSource>
-        {
-            new() { Value = 100 },
-            new() { Value = 200 },
-            new() { Value = 300 }
-        };
+        ICollection<SimpleSource> sources = _fixture.CreateMany<SimpleSource>(3).ToList();
 
         // Act
         var result = Mapper.ToList<SimpleDestination>(sources);
 
         // Assert
-        result.Should().HaveCount(3);
+        result.Should().HaveSameCount(sources);
         result.Should().AllSatisfy(x => x.Should().BeOfType<SimpleDestination>());
     }
 
@@ -184,47 +160,27 @@ public class CollectionMappingTests
     public void MapToArray_FromCollection_ShouldMapAllItems()
     {
         // Arrange
-        ICollection<SimpleSource> sources = new List<SimpleSource>
-        {
-            new() { Value = 1 },
-            new() { Value = 2 }
-        };
+        ICollection<SimpleSource> sources = _fixture.CreateMany<SimpleSource>(3).ToList();
 
         // Act
         var result = Mapper.ToArray<SimpleDestination>(sources);
 
         // Assert
         result.Should().BeOfType<SimpleDestination[]>();
-        result.Should().HaveCount(2);
+        result.Should().HaveSameCount(sources);
     }
 
     [Fact]
     public void MapList_WithNestedObjects_ShouldMapNestedCorrectly()
     {
         // Arrange
-        var persons = new List<Person>
-        {
-            new()
-            {
-                Id = 1,
-                FirstName = "John",
-                Address = new Address { City = "NYC" }
-            },
-            new()
-            {
-                Id = 2,
-                FirstName = "Jane",
-                Address = new Address { City = "LA" }
-            }
-        };
+        var persons = _fixture.CreateMany<Person>(2).ToList();
 
         // Act
         var result = Mapper.ToList<PersonDto>(persons);
 
         // Assert
-        result.Should().HaveCount(2);
-        result[0].Address.Should().NotBeNull();
-        result[0].Address!.City.Should().Be("NYC");
-        result[1].Address!.City.Should().Be("LA");
+        result.Should().HaveSameCount(persons);
+        result.Should().BeEquivalentTo(persons,options => options.WithStrictOrdering());
     }
 }
