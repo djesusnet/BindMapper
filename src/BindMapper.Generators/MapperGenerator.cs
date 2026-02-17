@@ -30,53 +30,27 @@ public sealed class MapperGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // SYNTAX PHASE: Find all methods with [MapperConfiguration] attribute
-        // This is lightweight - just syntax tree parsing, no semantic analysis
-        var configMethods = context.SyntaxProvider
-            .CreateSyntaxProvider(
-                static (node, _) => IsMethodWithAttributes(node),
-                static (ctx, _) => GetMapperConfigurationMethod(ctx))
-            .Where(static m => m is not null)
+        // OPTIMIZED PHASE 1: Use ForAttributeWithMetadataName for better performance (.NET 7+)
+        // This API is specifically designed for attribute-based generators and provides:
+        // - Faster semantic analysis (only analyzes nodes with the target attribute)
+        // - Better incremental caching (fine-grained invalidation)
+        // - Lower memory usage (doesn't allocate intermediate collections)
+        var configMethodsProvider = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                fullyQualifiedMetadataName: MapperConfigurationAttributeName,
+                predicate: static (node, _) => node is MethodDeclarationSyntax,
+                transform: static (ctx, _) => (MethodDeclarationSyntax)ctx.TargetNode)
             .Collect();
 
-        // SEMANTIC PHASE: Combine with compilation for full semantic analysis
+        // OPTIMIZED PHASE 2: Combine with compilation and extract mappings with fine-grained caching
         var mappingsProvider = context.CompilationProvider
-            .Combine(configMethods)
+            .Combine(configMethodsProvider)
             .SelectMany(static (source, _) => CollectAllMappings(source.Left, source.Right));
 
-        // GENERATION PHASE: Generate mapper code
+        // OPTIMIZED PHASE 3: Generate mapper code with deterministic output
         context.RegisterSourceOutput(
             mappingsProvider.Collect(),
             static (spc, mappings) => GenerateMapperFile(spc, mappings));
-    }
-
-    /// <summary>
-    /// Quick predicate to filter methods with attributes (avoids semantic analysis overhead).
-    /// </summary>
-    private static bool IsMethodWithAttributes(SyntaxNode node)
-    {
-        return node is MethodDeclarationSyntax { AttributeLists.Count: > 0 };
-    }
-
-    /// <summary>
-    /// Extracts method if it has [MapperConfiguration] attribute.
-    /// </summary>
-    private static MethodDeclarationSyntax? GetMapperConfigurationMethod(GeneratorSyntaxContext context)
-    {
-        if (context.Node is not MethodDeclarationSyntax methodDeclaration)
-            return null;
-
-        var symbol = context.SemanticModel.GetDeclaredSymbol(methodDeclaration) as IMethodSymbol;
-        if (symbol is null)
-            return null;
-
-        foreach (var attribute in symbol.GetAttributes())
-        {
-            if (attribute.AttributeClass?.ToDisplayString() == MapperConfigurationAttributeName)
-                return methodDeclaration;
-        }
-
-        return null;
     }
 
     /// <summary>
@@ -85,7 +59,7 @@ public sealed class MapperGenerator : IIncrementalGenerator
     /// </summary>
     private static IEnumerable<MappingConfiguration> CollectAllMappings(
         Compilation compilation,
-        ImmutableArray<MethodDeclarationSyntax?> configMethods)
+        ImmutableArray<MethodDeclarationSyntax> configMethods)
     {
         // Create analyzer for mapping configuration extraction
         var analyzer = new MappingConfigurationAnalyzer(compilation);
@@ -105,7 +79,8 @@ public sealed class MapperGenerator : IIncrementalGenerator
 
     /// <summary>
     /// Generates the Mapper.g.cs file with all mapping methods.
-    /// CRITICAL: Sorts mappings deterministically to ensure reproducible builds.
+    /// CRITICAL: Deduplicates and sorts mappings deterministically to ensure reproducible builds.
+    /// OPTIMIZED: Pre-calculates StringBuilder capacity to avoid reallocations.
     /// </summary>
     private static void GenerateMapperFile(
         SourceProductionContext context,
@@ -114,9 +89,20 @@ public sealed class MapperGenerator : IIncrementalGenerator
         if (mappings.Length == 0)
             return;
 
+        // CRITICAL FIX: Deduplicate mappings first (incremental generator may produce duplicates)
+        var distinctMappings = new Dictionary<string, MappingConfiguration>(StringComparer.Ordinal);
+        foreach (var mapping in mappings)
+        {
+            var key = $"{mapping.SourceTypeFullName}|{mapping.DestinationTypeFullName}";
+            if (!distinctMappings.ContainsKey(key))
+            {
+                distinctMappings[key] = mapping;
+            }
+        }
+
         // CRITICAL FIX: Sort deterministically for reproducible builds
         // Different build orders must produce identical generated code
-        var sortedMappings = mappings
+        var sortedMappings = distinctMappings.Values
             .OrderBy(m => m.SourceTypeFullName, StringComparer.Ordinal)
             .ThenBy(m => m.DestinationTypeFullName, StringComparer.Ordinal)
             .ToList();

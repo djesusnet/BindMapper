@@ -23,6 +23,7 @@ internal sealed class PropertyMappingAnalyzer
     /// Analyzes how each destination property should be mapped.
     /// Returns categorized assignments suitable for code generation.
     /// Single pass: O(destProps.Count * sourceProps.Count) but with caching.
+    /// OPTIMIZED: Manual dictionary construction to avoid LINQ allocation overhead.
     /// </summary>
     public PropertyMappingPlan AnalyzeMappings(
         MappingConfiguration config,
@@ -32,8 +33,13 @@ internal sealed class PropertyMappingAnalyzer
         destProperties ??= SymbolAnalysisHelper.GetPublicProperties(config.DestinationTypeSymbol);
         sourceProperties ??= SymbolAnalysisHelper.GetPublicProperties(config.SourceTypeSymbol);
 
-        // Create source lookup for O(1) access
-        var sourceLookup = sourceProperties.ToDictionary(p => p.Name, StringComparer.Ordinal);
+        // OPTIMIZED: Create source lookup for O(1) access - manual construction avoids LINQ overhead
+        var sourceLookup = new Dictionary<string, PropertyInfo>(sourceProperties.Count, StringComparer.Ordinal);
+        for (int i = 0; i < sourceProperties.Count; i++)
+        {
+            var prop = sourceProperties[i];
+            sourceLookup[prop.Name] = prop;
+        }
 
         var plan = new PropertyMappingPlan();
 
