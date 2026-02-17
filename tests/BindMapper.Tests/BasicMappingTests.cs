@@ -1,7 +1,6 @@
 using FluentAssertions;
 using BindMapper.Tests.Models;
 using Xunit;
-using AutoFixture;
 
 namespace BindMapper.Tests;
 
@@ -10,7 +9,6 @@ namespace BindMapper.Tests;
 /// </summary>
 public class BasicMappingTests
 {
-    private readonly Fixture _fixture = new Fixture();
     public BasicMappingTests()
     {
         TestMapperConfig.EnsureConfigured();
@@ -20,38 +18,49 @@ public class BasicMappingTests
     public void Map_SimpleObject_ShouldMapAllProperties()
     {
         // Arrange
-        var source = _fixture.Create<SimpleSource>(); 
+        var source = new SimpleSource
+        {
+            Value = 42,
+            Text = "Hello World",
+            Date = new DateTime(2026, 1, 24),
+            Amount = 99.99m
+        };
 
         // Act
         var result = Mapper.To<SimpleDestination>(source);
 
         // Assert
         result.Should().NotBeNull();
-        result.Value.Should().Be(source.Value);
-        result.Text.Should().Be(source.Text);
-        result.Date.Should().Be(source.Date);
-        result.Amount.Should().Be(source.Amount);
+        result.Value.Should().Be(42);
+        result.Text.Should().Be("Hello World");
+        result.Date.Should().Be(new DateTime(2026, 1, 24));
+        result.Amount.Should().Be(99.99m);
     }
 
     [Fact]
     public void Map_Person_ShouldMapAllProperties()
     {
         // Arrange
-        var person = _fixture.Build<Person>()
-            .With(x => x.IsActive, true)
-            .Create();
-                        
+        var person = new Person
+        {
+            Id = 1,
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "john@example.com",
+            Age = 30,
+            IsActive = true
+        };
 
         // Act
         var result = Mapper.To<PersonDto>(person);
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be(person.Id);
-        result.FirstName.Should().Be(person.FirstName);
-        result.LastName.Should().Be(person.LastName);
-        result.Email.Should().Be(person.Email);
-        result.Age.Should().Be(person.Age);
+        result.Id.Should().Be(1);
+        result.FirstName.Should().Be("John");
+        result.LastName.Should().Be("Doe");
+        result.Email.Should().Be("john@example.com");
+        result.Age.Should().Be(30);
         result.IsActive.Should().BeTrue();
     }
 
@@ -59,9 +68,13 @@ public class BasicMappingTests
     public void Map_PersonWithNullAddress_ShouldMapWithNullAddress()
     {
         // Arrange
-        var person = _fixture.Build<Person>()
-            .With(x => x.Address, (Address?)null)
-            .Create();
+        var person = new Person
+        {
+            Id = 1,
+            FirstName = "John",
+            LastName = "Doe",
+            Address = null
+        };
 
         // Act
         var result = Mapper.To<PersonDto>(person);
@@ -75,42 +88,49 @@ public class BasicMappingTests
     public void Map_ToExistingObject_ShouldUpdateAllProperties()
     {
         // Arrange
-        var source = _fixture
-            .Build<SimpleSource>()
-            .With(x=> x.Text, "Updated")        
-            .Create();        
+        var source = new SimpleSource
+        {
+            Value = 100,
+            Text = "Updated",
+            Date = new DateTime(2026, 6, 15),
+            Amount = 250.50m
+        };
 
-        var existing = _fixture
-            .Build<SimpleDestination>()
-            .With(x=> x.Text, "Original")
-            .With(x=> x.Date, DateTime.MinValue)
-            .With(x=> x.Amount, 0)
-            .Create();   
+        var existing = new SimpleDestination
+        {
+            Value = 0,
+            Text = "Original",
+            Date = DateTime.MinValue,
+            Amount = 0m
+        };
 
         // Act
         Mapper.To(source, existing);
 
         // Assert
-        existing.Value.Should().Be(source.Value);
-        existing.Text.Should().Be(source.Text);
-        existing.Date.Should().Be(source.Date);
-        existing.Amount.Should().Be(source.Amount);
+        existing.Value.Should().Be(100);
+        existing.Text.Should().Be("Updated");
+        existing.Date.Should().Be(new DateTime(2026, 6, 15));
+        existing.Amount.Should().Be(250.50m);
     }
 
     [Fact]
     public void Map_GenericMethod_ShouldReturnCorrectType()
     {
         // Arrange
-        var person = _fixture.Build<Person>().
-            With(x => x.FirstName, "Jane")
-            .Create();
+        var person = new Person
+        {
+            Id = 5,
+            FirstName = "Jane",
+            LastName = "Smith"
+        };
 
         // Act
         var result = Mapper.To<PersonDto>(person);
 
         // Assert
         result.Should().BeOfType<PersonDto>();
-        result.Id.Should().Be(person.Id);
+        result.Id.Should().Be(5);
         result.FirstName.Should().Be("Jane");
     }
 }

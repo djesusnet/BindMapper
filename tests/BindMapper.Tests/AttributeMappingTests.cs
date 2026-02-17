@@ -1,7 +1,6 @@
 using FluentAssertions;
 using BindMapper.Tests.Models;
 using Xunit;
-using AutoFixture;
 
 namespace BindMapper.Tests;
 
@@ -10,33 +9,44 @@ namespace BindMapper.Tests;
 /// </summary>
 public class AttributeMappingTests
 {
-    private readonly Fixture _fixture = new Fixture();
     public AttributeMappingTests()
     {
-        TestMapperConfig.EnsureConfigured();        
+        TestMapperConfig.EnsureConfigured();
     }
 
     [Fact]
     public void Map_WithMapFromAttribute_ShouldMapFromDifferentPropertyName()
     {
         // Arrange
-        var user = _fixture.Create<UserWithAttributes>();           
+        var user = new UserWithAttributes
+        {
+            Id = 1,
+            UserName = "johndoe",
+            SecretPassword = "secret123",
+            DisplayName = "John Doe"
+        };
 
         // Act
         var result = Mapper.To<UserWithAttributesDto>(user);
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be(result.Id);
-        result.Login.Should().Be(result.Login); // Mapped from UserName via [MapFrom]
-        result.DisplayName.Should().Be(result.DisplayName);
+        result.Id.Should().Be(1);
+        result.Login.Should().Be("johndoe"); // Mapped from UserName via [MapFrom]
+        result.DisplayName.Should().Be("John Doe");
     }
 
     [Fact]
     public void Map_WithIgnoreMapAttribute_ShouldNotMapIgnoredProperty()
     {
         // Arrange
-        var user = _fixture.Create<UserWithAttributes>();
+        var user = new UserWithAttributes
+        {
+            Id = 1,
+            UserName = "johndoe",
+            SecretPassword = "supersecret",
+            DisplayName = "John Doe"
+        };
 
         // Act
         var result = Mapper.To<UserWithAttributesDto>(user);
@@ -50,19 +60,29 @@ public class AttributeMappingTests
     public void Map_ToExistingWithIgnoreAttribute_ShouldPreserveIgnoredProperty()
     {
         // Arrange
-        var user = _fixture.Create<UserWithAttributes>();
+        var user = new UserWithAttributes
+        {
+            Id = 2,
+            UserName = "janedoe",
+            SecretPassword = "newsecret",
+            DisplayName = "Jane Doe"
+        };
 
-        var existing = _fixture.Build<UserWithAttributesDto>()
-                        .With(x => x.SecretPassword, "existingsecret")
-                        .Create();
+        var existing = new UserWithAttributesDto
+        {
+            Id = 0,
+            Login = "",
+            SecretPassword = "existingsecret", // Should be preserved
+            DisplayName = ""
+        };
 
         // Act
         Mapper.To(user, existing);
 
         // Assert
-        existing.Id.Should().Be(user.Id);
-        existing.Login.Should().Be(user.UserName);
+        existing.Id.Should().Be(2);
+        existing.Login.Should().Be("janedoe");
         existing.SecretPassword.Should().Be("existingsecret"); // Preserved, not overwritten
-        existing.DisplayName.Should().Be(user.DisplayName);
+        existing.DisplayName.Should().Be("Jane Doe");
     }
 }
