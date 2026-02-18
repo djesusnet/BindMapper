@@ -9,6 +9,11 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Authors>djesusnet</Authors>
+    <Company>djesusnet</Company>
+    <PackageDescription>Ultra-fast compile-time object mapper with Source Generators. Achieves 2.95x faster performance than AutoMapper with zero runtime overhead.</PackageDescription>
+    <RepositoryUrl>https://github.com/djesusnet/BindMapper</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
