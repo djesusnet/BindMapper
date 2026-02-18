@@ -225,27 +225,6 @@ If you see CS0436, ensure you're not mixing:
 
 ---
 
-## 🗺️ Roadmap
-
-### v1.1.0 (Planned)
-- [ ] Expression-based custom converters
-- [ ] Constructor injection support
-- [ ] Collection element conditions (`Where` clause)
-- [ ] Async mapping support
-
-### v1.2.0 (Planned)
-- [ ] Multi-source mapping (`CreateMap<T1, T2, TDest>`)
-- [ ] Post-mapping actions (`AfterMap`)
-- [ ] Pre-mapping validation
-- [ ] Polymorphic mapping support
-
-### v2.0.0 (Future)
-- [ ] Full AutoMapper API compatibility layer
-- [ ] Migration tooling from AutoMapper
-- [ ] Performance profiling integration
-- [ ] Visual Studio extension for mapping visualization
-
----
 
 ## 🤝 Contributing
 
